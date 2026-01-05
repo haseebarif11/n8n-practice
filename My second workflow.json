@@ -1,0 +1,93 @@
+{
+  "name": "My second workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "d43a7ef6-9c4b-4af9-9bce-e42443d09c32",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "319bce8f-3531-4d1f-b296-ccef9137b1f3",
+      "name": "Webhook",
+      "webhookId": "d43a7ef6-9c4b-4af9-9bce-e42443d09c32"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cbd171ea-bd89-48ab-bc37-bf162210c951",
+              "name": "haseeb",
+              "value": "active",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c35af104-4c6b-4e0f-9722-684b5316c58f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "4495401c-51e6-49a9-b8fe-07585fb54ed0",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a45001fc-aa8a-47df-90be-ea1cb43341df",
+  "meta": {
+    "instanceId": "373cb47ed7836159d02d63d2602b617a50876d0cc2a846f7a50bdfac90dad9b1"
+  },
+  "id": "n4Xq0crBw3xhQHFb",
+  "tags": []
+}
