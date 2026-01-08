@@ -1,0 +1,284 @@
+{
+  "name": "Customer Support Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customer-support",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "baa5009d-0b53-4f63-9ea7-64515a0e2ea3",
+      "name": "Webhook",
+      "webhookId": "a29e000d-5a09-4843-99d1-158358966da0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.body.question}}",
+        "options": {
+          "systemMessage": "You are a helpful customer support agent. \n\nCustomer Question: {{$json.body.question}}\n\nPlease provide:\n1. A clear, helpful answer to their question\n2. Categorize the issue as one of: billing, technical, general\n3. Determine the sentiment as one of: positive, neutral, negative\n\nFormat your response exactly like this:\nAnswer: [your detailed answer here]\nCategory: [billing/technical/general]\nSentiment: [positive/neutral/negative]\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1a9afaf3-80f9-44e8-afa6-065fb0f5c518",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-3.2-3b-instruct:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "c583db6f-8c59-4885-b8c7-3fe64cbabfc6",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "M4L3QnDbspDvapzE",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9447139c-a8d7-43f1-a274-012d41e65025",
+              "name": "Timestamp",
+              "value": "={{$now.format('YYYY-MM-DD HH:mm:ss')}}",
+              "type": "string"
+            },
+            {
+              "id": "281bd91e-2444-436c-b2c0-429c5799d2c2",
+              "name": "Question",
+              "value": "={{$('Webhook').item.json.body.question}}",
+              "type": "string"
+            },
+            {
+              "id": "df9d6a7b-27f2-4815-a686-09fd72b1203f",
+              "name": "Answer",
+              "value": "{$json.output}}",
+              "type": "string"
+            },
+            {
+              "id": "3ff1b0e6-341d-42b4-90d8-82ea126853d1",
+              "name": "Category",
+              "value": "={{$json.output}} (extract from AI response)",
+              "type": "string"
+            },
+            {
+              "id": "7a99c733-34ef-45f9-882f-b9fa9b8e9c0d",
+              "name": "Sentiment",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "bd0fc307-97ba-43f2-926d-1899d2348ffa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"answer\": \"{{$('Set').item.json.Answer}}\",\n  \"category\": \"{{$('Set').item.json.Category}}\",\n  \"sentiment\": \"{{$('Set').item.json.Sentiment}}\",\n  \"logged\": true\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        976,
+        0
+      ],
+      "id": "80eb5178-b3fb-4664-a501-6d3d4c9938d8",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1nqllbx98O1bfYXJ6ymh6-4yZZ1K8tXQbu-sTppW_Imo/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1nqllbx98O1bfYXJ6ymh6-4yZZ1K8tXQbu-sTppW_Imo/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "{{ $node[\"Set\"].json[\"Timestamp\"] }}",
+            "Question": "{{ $node[\"Set\"].json[\"Question\"] }}",
+            "Answer": "{{ $node[\"Set\"].json[\"Answer\"] }}",
+            "Category": "{{ $node[\"Set\"].json[\"Category\"] }}",
+            "Sentiment": "{{ $node[\"Set\"].json[\"Sentiment\"] }}"
+          },
+          "matchingColumns": [
+            "Timestamp"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answer",
+              "displayName": "Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        0
+      ],
+      "id": "3f8c8c54-0035-4799-a862-01934e6418f8",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kthBKcTfYT6Zwzvt",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "139d80a0-696f-42d6-aca2-1e1d37ba617e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "373cb47ed7836159d02d63d2602b617a50876d0cc2a846f7a50bdfac90dad9b1"
+  },
+  "id": "89AnpsSJY3Kcw9Bv",
+  "tags": []
+}

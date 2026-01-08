@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Bot Tester</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg: #f8f9fa;
+            --text: #333;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; }
+        .card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: var(--primary); text-align: center; }
+        .instructions { font-size: 0.9rem; color: #666; background: #eef2f7; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
+        input[type="text"]:focus { border-color: var(--primary); outline: none; }
+        
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #357ABD; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        .examples { margin-top: 20px; }
+        .examples p { margin-bottom: 8px; font-weight: bold; font-size: 0.85rem; }
+        .chip { display: inline-block; background: #eee; padding: 6px 12px; margin: 4px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+        .chip:hover { background: #ddd; }
+
+        #result-container { margin-top: 30px; display: none; padding: 20px; border-radius: 8px; border-left: 5px solid var(--primary); background: #f0f7ff; }
+        .loading { text-align: center; display: none; margin-top: 15px; font-weight: bold; color: var(--primary); }
+        .error { color: #d9534f; background: #fdf7f7; border-left: 5px solid #d9534f; }
+        
+        .meta-data { margin-top: 10px; font-size: 0.8rem; color: #555; border-top: 1px solid #d0dae5; pt: 10px; display: flex; gap: 15px; }
+        .tag { font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🤖 Support Bot Tester</h2>
+    <div class="instructions">
+        <strong>How to test:</strong> Ensure your n8n workflow is in <strong>"Execute Workflow"</strong> mode before clicking submit.
+    </div>
+
+    <div class="input-group">
+        <label for="question">What is your question?</label>
+        <input type="text" id="question" placeholder="e.g. How do I reset my password?">
+    </div>
+
+    <button id="submitBtn" onclick="testBot()">Send Question</button>
+
+    <div id="loading" class="loading">⚙️ Bot is thinking and logging to Sheets...</div>
+
+    <div id="result-container">
+        <strong>Response:</strong>
+        <p id="answerArea"></p>
+        <div class="meta-data">
+            <span>Category: <span class="tag" id="categoryTag"></span></span>
+            <span>Sentiment: <span class="tag" id="sentimentTag"></span></span>
+        </div>
+    </div>
+
+    <div class="examples">
+        <p>Click an example to try:</p>
+        <div class="chip" onclick="autoFill('How do I reset my password?')">Forgot Password</div>
+        <div class="chip" onclick="autoFill('Why was I charged twice this month?')">Billing Issue</div>
+        <div class="chip" onclick="autoFill('What are your opening hours?')">General Question</div>
+    </div>
+</div>
+
+<script>
+    // --- REPLACE THIS URL WITH YOUR n8n TEST WEBHOOK URL ---
+    const WEBHOOK_URL = 'http://localhost:5678/webhook-test/customer-support';
+
+    function autoFill(text) {
+        document.getElementById('question').value = text;
+    }
+
+    async function testBot() {
+        const questionInput = document.getElementById('question');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultContainer = document.getElementById('result-container');
+        const answerArea = document.getElementById('answerArea');
+        const loading = document.getElementById('loading');
+        const categoryTag = document.getElementById('categoryTag');
+        const sentimentTag = document.getElementById('sentimentTag');
+
+        const questionValue = questionInput.value.trim();
+
+        if (!questionValue) {
+            alert("Please enter a question first!");
+            return;
+        }
+
+        // UI State: Loading
+        submitBtn.disabled = true;
+        loading.style.display = 'block';
+        resultContainer.style.display = 'none';
+        resultContainer.classList.remove('error');
+
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: questionValue })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const data = await response.json();
+
+            // Display Results
+            answerArea.innerText = data.answer || "No answer received.";
+            categoryTag.innerText = data.category || "N/A";
+            sentimentTag.innerText = data.sentiment || "N/A";
+            
+            resultContainer.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error:', error);
+            resultContainer.classList.add('error');
+            answerArea.innerText = "Error: Could not connect to the n8n webhook. Make sure n8n is running and the 'Execute Workflow' button was clicked.";
+            resultContainer.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            loading.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
