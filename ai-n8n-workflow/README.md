@@ -1,7 +1,4 @@
-# AI Customer Support Bot
-This project uses **n8n**, **OpenRouter**, and **Google Sheets** to automate customer support.
-
-## Components
-- **n8n Workflow**: Processes webhooks, uses AI to answer/categorize, and logs to Sheets.
-- **test.html**: A custom frontend for testing the bot.
-- **Google Sheets**: Acts as the database for all support logs.
+## 🚀 Final Implementation Notes
+- **Dynamic Mapping:** All nodes (Slack, Google Sheets) now use n8n Expressions `{{ }}` to ensure real-time data from the AI agent is captured.
+- **Workflow Name:** AI Content Creator & Publisher Pipeline
+- **Branch:** feature/ai-content-pipeline

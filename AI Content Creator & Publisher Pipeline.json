@@ -1,0 +1,341 @@
+{
+  "name": "AI Content Creator & Publisher Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "create-content",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "46041343-bc82-4768-97b9-f2b962178b00",
+      "name": "Webhook",
+      "webhookId": "2d8d1c50-434f-495f-9d93-dbeee11f83b8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a {{ $json.body.platform }} post about the following topic: {{ $json.body.topic }}",
+        "options": {
+          "systemMessage": "You are an expert Social Media Manager. Your task is to generate high-quality, engaging content based on a Topic and a Platform provided to you.\n\nFollow these rules:\n1. Tone: Professional yet engaging.\n2. Structure: One catchy headline, 3-4 bullet points, and a \"Call to Action\" at the end.\n3. Length: Keep it under 200 words.\n4. Output: Provide ONLY the content text. Do not add conversational filler like \"Here is your post.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9d4b1ed4-e45c-4e61-a7ea-dfd0cf844e5c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-3.2-3b-instruct:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "b45620ce-8b30-47cb-bea7-e7505d135907",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "M4L3QnDbspDvapzE",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "908210aa-7f0f-4dd9-b12e-c9725eb8ea94",
+              "name": "Date",
+              "value": "={{ $now.format('YYYY-MM-DD HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "bc338f32-3f39-4ffb-a2f8-a0ea7b96a883",
+              "name": "Topic",
+              "value": "={{ $('Webhook').item.json.body.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "27f06159-bf58-49e2-b86f-4289355dc5a2",
+              "name": "Platform",
+              "value": "={{ $('Webhook').item.json.body.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "cc37b876-5efc-4c70-9703-af55d58a3ea3",
+              "name": "Content",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "9095238b-fe52-4ba5-8057-274c9ce444a7",
+              "name": "Hashtags",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "738a0f42-6f7d-4af1-a124-cbbc9db0e2d0",
+              "name": "Status",
+              "value": "Draft",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "e00c15f9-da17-4adc-928f-af5765dca7b5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1hTvY4b3CrCQ4_WRYrJSJ5wNT1eqgKZv2TbMeJ1IuTX0/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1hTvY4b3CrCQ4_WRYrJSJ5wNT1eqgKZv2TbMeJ1IuTX0/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('YYYY-MM-DD HH:mm') }}",
+            "Topic": "={{ $json.Topic }}",
+            "Platform": "={{ $('Webhook').item.json.body.platform }}",
+            "Content": "={{ $json.Content }}",
+            "Hashtags": "={{ $json.Content }}",
+            "Status": "=Draft"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Hashtags",
+              "displayName": "Hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        0
+      ],
+      "id": "a86e3c04-a744-48c2-8795-5fa2662f35b0",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HYt6ifiOaIugPkE9",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#content-alerts",
+          "mode": "name"
+        },
+        "text": "=🎉 *New content created!*\n📝 *Topic:* {{ $json.Topic }}\n📱 *Platform:* {{ $json.Platform }}\n✨ *Content:* {{ $json.Content }}\n🏷️ *Hashtags:* {{ $json.Hashtags }}\n✅ Saved to Content Calendar",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        944,
+        0
+      ],
+      "id": "a757d5f5-1cdf-4aa8-a2b2-bb7b05af3c73",
+      "name": "Send a message",
+      "webhookId": "5fc941ea-ca8a-4082-976a-b2e5824a02b8",
+      "credentials": {
+        "slackApi": {
+          "id": "7okYHm85aONESxJ5",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Content created successfully\",\n  \"topic\": \"{{$('Set').item.json.Topic}}\",\n  \"platform\": \"{{$('Set').item.json.Platform}}\",\n  \"saved_to_sheets\": true,\n  \"slack_notified\": true\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "b4d36d68-4f25-4e69-946f-e4e8a6c6b2f3",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "93b80fe3-131a-45b7-8b97-f936337dfa05",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "373cb47ed7836159d02d63d2602b617a50876d0cc2a846f7a50bdfac90dad9b1"
+  },
+  "id": "hYLF0QdFrtMfaF0F",
+  "tags": []
+}

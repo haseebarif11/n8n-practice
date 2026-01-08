@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Agent - Test Interface</title>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; }
+        h1 { font-size: 1.75rem; color: #1a1a1a; margin-bottom: 1.5rem; text-align: center; letter-spacing: -0.5px; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4b5563; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: #ff6d18; ring: 2px solid #ff6d1822; }
+        button { width: 100%; padding: 1rem; background-color: #ff6d18; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.1s, background 0.2s; }
+        button:hover { background-color: #e55b00; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        #status { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-size: 0.9rem; display: none; text-align: center; line-height: 1.4; }
+        .loading { background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>🚀 Content Creator</h1>
+        
+        <div class="form-group">
+            <label for="topic">Content Topic</label>
+            <input type="text" id="topic" placeholder="e.g. Benefits of automation in 2026" required>
+        </div>
+
+        <div class="form-group">
+            <label for="platform">Target Platform</label>
+            <select id="platform">
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Twitter/X">Twitter/X</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+            </select>
+        </div>
+
+        <button id="submitBtn" onclick="sendData()">Generate & Publish</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function sendData() {
+            const topic = document.getElementById('topic').value;
+            const platform = document.getElementById('platform').value;
+            const status = document.getElementById('status');
+            const btn = document.getElementById('submitBtn');
+
+            if (!topic) {
+                alert("Please enter a topic before proceeding.");
+                return;
+            }
+
+            // UI State: Loading
+            status.style.display = 'block';
+            status.className = 'loading';
+            status.innerText = "⏳ AI Agent is generating content and updating Sheets/Slack...";
+            btn.disabled = true;
+
+            try {
+                // IMPORTANT: This uses the Test Webhook URL
+                const response = await fetch('http://localhost:5678/webhook-test/create-content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, platform })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'success';
+                    status.innerText = "✅ Success! Post saved to Google Sheets and sent to Slack.";
+                } else {
+                    throw new Error('Workflow returned an error. Make sure n8n is running and "Execute Workflow" is clicked.');
+                }
+            } catch (error) {
+                status.className = 'error';
+                status.innerText = "❌ Error: " + error.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
