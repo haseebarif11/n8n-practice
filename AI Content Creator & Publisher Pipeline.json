@@ -124,12 +124,12 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Date": "{{ $now.format('YYYY-MM-DD HH:mm') }}",
-            "Topic": "{{ $json.Topic }}",
-            "Platform": "{{ $('Webhook').item.json.body.platform }}",
-            "Content": "{{ $json.Content }}",
-            "Hashtags": "{{ $json.Content }}",
-            "Status": "Draft"
+            "Date": "={{ $now.format('YYYY-MM-DD HH:mm') }}",
+            "Topic": "={{ $json.Topic }}",
+            "Platform": "={{ $('Webhook').item.json.body.platform }}",
+            "Content": "={{ $json.Content }}",
+            "Hashtags": "={{ $json.Content }}",
+            "Status": "=Draft"
           },
           "matchingColumns": [],
           "schema": [
@@ -331,7 +331,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "23388d92-29ee-4d3c-b3ed-02e5315d964a",
+  "versionId": "93b80fe3-131a-45b7-8b97-f936337dfa05",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "373cb47ed7836159d02d63d2602b617a50876d0cc2a846f7a50bdfac90dad9b1"
