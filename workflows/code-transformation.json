@@ -1,0 +1,57 @@
+{
+  "name": "Code Node Practice",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { name: 'Alice', score: 85 } },\n  { json: { name: 'Bob', score: 92 } },\n  { json: { name: 'Charlie', score: 78 } }\n];"
+      },
+      "id": "2",
+      "name": "Mock Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [470, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of items) {\n  item.json.grade = item.json.score >= 90 ? 'A' : 'B';\n}\nreturn items;"
+      },
+      "id": "3",
+      "name": "Process Grades",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [690, 240]
+    }
+  ],
+  "connections": {
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Process Grades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
